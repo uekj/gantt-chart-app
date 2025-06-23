@@ -67,18 +67,6 @@ export const verificationTokens = sqliteTable('verificationToken', {
   })
 }))
 
-// API Keys table
-export const apiKeys = sqliteTable('api_keys', {
-  id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  keyHash: text('key_hash').notNull(),
-  keyPrefix: text('key_prefix').notNull(),
-  scopes: text('scopes').notNull(),
-  lastUsedAt: text('last_used_at'),
-  expiresAt: text('expires_at'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-})
 
 export type Project = typeof projects.$inferSelect
 export type NewProject = typeof projects.$inferInsert
@@ -86,5 +74,3 @@ export type Task = typeof tasks.$inferSelect
 export type NewTask = typeof tasks.$inferInsert
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
-export type ApiKey = typeof apiKeys.$inferSelect
-export type NewApiKey = typeof apiKeys.$inferInsert

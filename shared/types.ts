@@ -18,13 +18,3 @@ export interface Task {
   updated_at?: string;
 }
 
-export interface MCPOperation {
-  operation: 'list_projects' | 'create_project' | 'create_task' | 'update_task_dates';
-  data?: any;
-}
-
-export interface APIResponse<T = any> {
-  result?: T;
-  error?: string;
-  message?: string;
-}
