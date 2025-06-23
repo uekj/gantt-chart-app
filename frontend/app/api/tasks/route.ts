@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { tasks, projects } from '@/lib/db/schema'
 import { auth } from '@/lib/auth'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 import { initializeLocalDatabase } from '@/lib/db/init'
 
 export async function GET(request: NextRequest) {
@@ -18,14 +18,28 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('project_id')
 
-    let query = db.select().from(tasks)
+    // ユーザーのプロジェクトのタスクのみ取得
+    let query = db
+      .select({
+        id: tasks.id,
+        projectId: tasks.projectId,
+        name: tasks.name,
+        startDate: tasks.startDate,
+        endDate: tasks.endDate,
+        displayOrder: tasks.displayOrder,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+      })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(eq(projects.userId, session.user.id))
 
     if (projectId) {
       const projectIdNum = parseInt(projectId)
       if (isNaN(projectIdNum)) {
         return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
       }
-      query = query.where(eq(tasks.projectId, projectIdNum))
+      query = query.where(and(eq(projects.userId, session.user.id), eq(tasks.projectId, projectIdNum)))
     }
 
     const allTasks = await query.orderBy(desc(tasks.displayOrder))
@@ -67,10 +81,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // プロジェクトがユーザーのものかチェック
     const projectExists = await db
       .select()
       .from(projects)
-      .where(eq(projects.id, project_id))
+      .where(and(eq(projects.id, project_id), eq(projects.userId, session.user.id)))
     
     if (projectExists.length === 0) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -86,14 +101,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    if (startDate < today) {
-      return NextResponse.json(
-        { error: 'Start date cannot be in the past' },
-        { status: 400 }
-      )
-    }
+    // 過去日付制限は削除済み
 
     // ローカルデータベース初期化
     await initializeLocalDatabase()

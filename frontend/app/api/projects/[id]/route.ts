@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { projects, tasks } from '@/lib/db/schema'
 import { auth } from '@/lib/auth'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 interface RouteParams {
   params: {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const [project] = await db
       .select()
       .from(projects)
-      .where(eq(projects.id, projectId))
+      .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const [updatedProject] = await db
       .update(projects)
       .set(updateData)
-      .where(eq(projects.id, projectId))
+      .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
       .returning()
 
     if (!updatedProject) {
@@ -100,6 +100,16 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const projectId = parseInt(params.id)
     if (isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
+    }
+
+    // まず、このユーザーのプロジェクトかどうか確認
+    const [project] = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
+
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
     await db.delete(tasks).where(eq(tasks.projectId, projectId))

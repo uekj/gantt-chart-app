@@ -18,6 +18,7 @@ export async function GET() {
     const allProjects = await db
       .select()
       .from(projects)
+      .where(eq(projects.userId, session.user.id))
       .orderBy(desc(projects.displayOrder))
 
     // フロントエンド形式に変換
@@ -26,6 +27,7 @@ export async function GET() {
       name: project.name,
       start_date: project.startDate,
       display_order: project.displayOrder,
+      user_id: project.userId,
     }))
 
     return NextResponse.json(responseProjects)
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
         name,
         startDate: start_date,
         displayOrder: display_order,
+        userId: session.user.id,
       })
       .returning()
 
@@ -73,6 +76,7 @@ export async function POST(request: NextRequest) {
       name: newProject.name,
       start_date: newProject.startDate,
       display_order: newProject.displayOrder,
+      user_id: newProject.userId,
     }
 
     return NextResponse.json(responseProject, { status: 201 })

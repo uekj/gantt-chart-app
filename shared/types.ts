@@ -3,6 +3,7 @@ export interface Project {
   name: string;
   start_date: string;
   display_order: number;
+  user_id: string;
   created_at?: string;
   updated_at?: string;
 }
