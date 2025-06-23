@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { projects, tasks } from '@/lib/db/schema'
 import { auth } from '@/lib/auth'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 interface RouteParams {
   params: {
@@ -10,6 +10,11 @@ interface RouteParams {
   }
 }
 
+/**
+ * Retrieves a project by ID for the authenticated user.
+ *
+ * Returns the project data if it exists and belongs to the user; otherwise, returns an appropriate error response.
+ */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
@@ -25,7 +30,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const [project] = await db
       .select()
       .from(projects)
-      .where(eq(projects.id, projectId))
+      .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
@@ -41,6 +46,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+/**
+ * Updates a project belonging to the authenticated user with provided fields.
+ *
+ * Accepts `name`, `start_date`, and `display_order` in the request body to update the specified project. Returns the updated project data if successful, or an error if the project is not found, the user is unauthorized, the project ID is invalid, or no valid fields are provided.
+ */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
@@ -73,7 +83,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const [updatedProject] = await db
       .update(projects)
       .set(updateData)
-      .where(eq(projects.id, projectId))
+      .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
       .returning()
 
     if (!updatedProject) {
@@ -90,6 +100,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+/**
+ * Deletes a project and all its associated tasks for the authenticated user.
+ *
+ * Returns a success message if the project is deleted, or an error if the project does not exist, does not belong to the user, or if an error occurs.
+ */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
@@ -100,6 +115,16 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const projectId = parseInt(params.id)
     if (isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
+    }
+
+    // まず、このユーザーのプロジェクトかどうか確認
+    const [project] = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, projectId), eq(projects.userId, session.user.id)))
+
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
     await db.delete(tasks).where(eq(tasks.projectId, projectId))

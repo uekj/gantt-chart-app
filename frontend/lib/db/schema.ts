@@ -7,6 +7,7 @@ export const projects = sqliteTable('projects', {
   name: text('name').notNull(),
   startDate: text('start_date').notNull(),
   displayOrder: integer('display_order').notNull().default(0),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 })

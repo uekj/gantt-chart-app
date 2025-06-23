@@ -5,6 +5,11 @@ import { auth } from '@/lib/auth'
 import { eq, desc } from 'drizzle-orm'
 import { initializeLocalDatabase } from '@/lib/db/init'
 
+/**
+ * Retrieves all projects belonging to the authenticated user.
+ *
+ * Returns a JSON array of project objects, each including the project ID, name, start date, display order, and user ID. Responds with 401 if the user is not authenticated, or 500 if an error occurs during retrieval.
+ */
 export async function GET() {
   try {
     const session = await auth()
@@ -18,6 +23,7 @@ export async function GET() {
     const allProjects = await db
       .select()
       .from(projects)
+      .where(eq(projects.userId, session.user.id))
       .orderBy(desc(projects.displayOrder))
 
     // フロントエンド形式に変換
@@ -26,6 +32,7 @@ export async function GET() {
       name: project.name,
       start_date: project.startDate,
       display_order: project.displayOrder,
+      user_id: project.userId,
     }))
 
     return NextResponse.json(responseProjects)
@@ -38,6 +45,11 @@ export async function GET() {
   }
 }
 
+/**
+ * Handles HTTP POST requests to create a new project for the authenticated user.
+ *
+ * Expects a JSON body with `name` and `start_date` fields, and optionally `display_order`. Returns the newly created project in a frontend-friendly format, including the user ID. Responds with appropriate error messages and status codes for authentication, validation, or server errors.
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
@@ -64,6 +76,7 @@ export async function POST(request: NextRequest) {
         name,
         startDate: start_date,
         displayOrder: display_order,
+        userId: session.user.id,
       })
       .returning()
 
@@ -73,6 +86,7 @@ export async function POST(request: NextRequest) {
       name: newProject.name,
       start_date: newProject.startDate,
       display_order: newProject.displayOrder,
+      user_id: newProject.userId,
     }
 
     return NextResponse.json(responseProject, { status: 201 })

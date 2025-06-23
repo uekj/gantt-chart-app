@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
-import { tasks } from '@/lib/db/schema'
+import { tasks, projects } from '@/lib/db/schema'
 import { auth } from '@/lib/auth'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { initializeLocalDatabase } from '@/lib/db/init'
 
 interface RouteParams {
@@ -11,6 +11,11 @@ interface RouteParams {
   }
 }
 
+/**
+ * Retrieves a specific task by ID for the authenticated user.
+ *
+ * Returns the task in a frontend-friendly format if it exists and belongs to a project owned by the user. Responds with appropriate error codes for unauthorized access, invalid task ID, task not found, or server errors.
+ */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
@@ -26,10 +31,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 })
     }
 
+    // ユーザーのプロジェクトのタスクのみ取得
     const [task] = await db
-      .select()
+      .select({
+        id: tasks.id,
+        projectId: tasks.projectId,
+        name: tasks.name,
+        startDate: tasks.startDate,
+        endDate: tasks.endDate,
+        displayOrder: tasks.displayOrder,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+      })
       .from(tasks)
-      .where(eq(tasks.id, taskId))
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(and(eq(tasks.id, taskId), eq(projects.userId, session.user.id)))
 
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
