@@ -10,6 +10,11 @@ interface RouteParams {
   }
 }
 
+/**
+ * Retrieves a project by ID for the authenticated user.
+ *
+ * Returns the project data if it exists and belongs to the user; otherwise, returns an appropriate error response.
+ */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
@@ -41,6 +46,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+/**
+ * Updates a project belonging to the authenticated user with provided fields.
+ *
+ * Accepts `name`, `start_date`, and `display_order` in the request body to update the specified project. Returns the updated project data if successful, or an error if the project is not found, the user is unauthorized, the project ID is invalid, or no valid fields are provided.
+ */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
@@ -90,6 +100,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+/**
+ * Deletes a project and all its associated tasks for the authenticated user.
+ *
+ * Returns a success message if the project is deleted, or an error if the project does not exist, does not belong to the user, or if an error occurs.
+ */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()

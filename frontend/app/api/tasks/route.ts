@@ -5,6 +5,11 @@ import { auth } from '@/lib/auth'
 import { eq, desc, and } from 'drizzle-orm'
 import { initializeLocalDatabase } from '@/lib/db/init'
 
+/**
+ * Retrieves tasks belonging to projects owned by the authenticated user.
+ *
+ * If a `project_id` query parameter is provided, only tasks from that project are returned. Responds with appropriate error messages for unauthorized access, invalid project IDs, or server errors. The returned tasks are formatted with snake_case keys for frontend compatibility.
+ */
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
@@ -64,6 +69,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * Handles creation of a new task for a project owned by the authenticated user.
+ *
+ * Expects a JSON body with `project_id`, `name`, `start_date`, `end_date`, and optionally `display_order`. Validates that the project exists and belongs to the user, and that the end date is after the start date. Returns the created task in a frontend-friendly format with a 201 status code, or an error response if validation fails.
+ */
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()

@@ -11,6 +11,11 @@ interface RouteParams {
   }
 }
 
+/**
+ * Retrieves a specific task by ID for the authenticated user.
+ *
+ * Returns the task in a frontend-friendly format if it exists and belongs to a project owned by the user. Responds with appropriate error codes for unauthorized access, invalid task ID, task not found, or server errors.
+ */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
