@@ -137,22 +137,32 @@ export default function Home() {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Gantt Chart App</h1>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {session?.user?.image && (
                 <img
                   src={session.user.image}
                   alt="Profile"
-                  className="h-8 w-8 rounded-full"
+                  className="h-10 w-10 rounded-full border-2 border-gray-200 shadow-sm"
                 />
               )}
-              <span className="text-sm text-gray-700">
-                {session?.user?.name || session?.user?.email}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-900">
+                  {session?.user?.name || session?.user?.email}
+                </span>
+                {session?.user?.name && session?.user?.email && (
+                  <span className="text-xs text-gray-500">
+                    {session.user.email}
+                  </span>
+                )}
+              </div>
             </div>
             <button
               onClick={handleSignOut}
-              className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded hover:bg-gray-50"
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
               ログアウト
             </button>
           </div>

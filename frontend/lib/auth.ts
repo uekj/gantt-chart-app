@@ -28,6 +28,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session
     },
+    signIn: async ({ user, account, profile }) => {
+      // サインイン成功の条件をチェック
+      if (account?.provider === 'google') {
+        return true
+      }
+      return false
+    },
   },
   pages: {
     signIn: '/auth/signin',
