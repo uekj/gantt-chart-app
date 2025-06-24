@@ -3,10 +3,18 @@ const dotenv = require('dotenv')
 
 dotenv.config({ path: '.env.local' })
 
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-})
+const databaseUrl = process.env.DATABASE_URL || 'file:./local.db'
+const isTurso = databaseUrl.startsWith('libsql://')
+
+const client = createClient(isTurso 
+  ? {
+      url: databaseUrl,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    }
+  : {
+      url: databaseUrl,
+    }
+)
 
 async function testConnection() {
   try {

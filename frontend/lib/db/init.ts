@@ -7,13 +7,14 @@ export async function initializeLocalDatabase() {
   
   try {
     // ローカル開発時のみスキーマを自動作成
-    const isDevelopment = !process.env.TURSO_DATABASE_URL || process.env.NODE_ENV === 'development'
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const databaseUrl = process.env.DATABASE_URL || 'file:./local.db'
     
     if (isDevelopment) {
       console.log('🔧 ローカルSQLiteデータベースを初期化中...')
       
       const client = createClient({
-        url: 'file:./local.db',
+        url: databaseUrl,
       })
       
       // スキーマを作成
