@@ -45,12 +45,37 @@ test.describe('Application Structure', () => {
     
     // CSS が正しく読み込まれていることを確認（Tailwind CSS）
     const body = page.locator('body');
-    const computedStyle = await body.evaluate((el) => {
-      return window.getComputedStyle(el);
+    const bodyStyles = await body.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return {
+        display: style.display,
+        fontFamily: style.fontFamily,
+        margin: style.margin,
+        padding: style.padding
+      };
     });
     
-    // 基本的なスタイルが適用されていることを確認
-    expect(computedStyle).toBeTruthy();
+    // 基本的なCSSプロパティが適用されていることを確認
+    expect(bodyStyles.display).toBeTruthy();
+    expect(bodyStyles.fontFamily).toBeTruthy();
+    expect(bodyStyles.margin).toBeDefined();
+    expect(bodyStyles.padding).toBeDefined();
+    
+    // Tailwind CSSの特定のクラスが適用されているかを確認
+    const googleButton = page.getByRole('button', { name: 'Googleでログイン' });
+    const buttonStyles = await googleButton.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return {
+        borderRadius: style.borderRadius,
+        padding: style.padding,
+        backgroundColor: style.backgroundColor
+      };
+    });
+    
+    // ボタンスタイルが適用されていることを確認
+    expect(buttonStyles.borderRadius).not.toBe('0px'); // rounded-md class
+    expect(buttonStyles.padding).not.toBe('0px'); // px-4 py-3 classes
+    expect(buttonStyles.backgroundColor).toBeTruthy(); // bg-white class
     
     // SVGアイコンが正しく表示されることを確認
     await expect(page.locator('svg').first()).toBeVisible();
