@@ -26,9 +26,18 @@ function initializeDatabase(): DatabaseType {
     }
   } else {
     // プロダクション環境またはリモートDB: Turso/libsqlを使用
+    const isTurso = databaseUrl.startsWith('libsql://')
+    
+    if (isTurso && !process.env.TURSO_AUTH_TOKEN) {
+      throw new Error(
+        'TURSO_AUTH_TOKEN environment variable is required when using Turso database. ' +
+        'Please set TURSO_AUTH_TOKEN in your environment variables.'
+      )
+    }
+    
     const client = createClient({
       url: databaseUrl,
-      authToken: process.env.TURSO_AUTH_TOKEN, // Turso使用時のみ必要
+      authToken: isTurso ? process.env.TURSO_AUTH_TOKEN as string : undefined,
     })
     return drizzle(client, { schema })
   }
