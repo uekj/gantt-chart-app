@@ -13,15 +13,15 @@
 ```bash
 # NextAuth.js設定
 NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL_INTERNAL=http://localhost:3000
 NEXTAUTH_SECRET=your-32-character-secret-key-here
 
 # Google OAuth設定
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# GitHub OAuth設定  
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
+# Database設定
+DATABASE_URL=file:./local.db
 ```
 
 ### 2. NEXTAUTH_SECRETの生成
