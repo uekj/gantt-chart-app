@@ -64,16 +64,38 @@ NextAuth.jsはDrizzle ORMを使用してセッション情報をデータベー�
 
 これらは`lib/db/schema.ts`で定義されています。
 
-## 本番環境での注意事項
+## プロダクション環境での管理
 
-### セキュリティ
-- `NEXTAUTH_SECRET`は必ず32文字以上のランダムな文字列を使用
-- OAuthアプリケーションの設定で本番ドメインのみを許可
-- HTTPSを必須設定
+### Vercelでの環境変数設定
 
-### 環境変数
-- Vercelの場合、Environment Variablesでプロダクション用の値を設定
-- `NEXTAUTH_URL`は本番ドメインに変更
+1. **Vercelダッシュボードにアクセス**
+   - プロジェクト > Settings > Environment Variables
+
+2. **必要な環境変数を設定**
+   ```bash
+   # NextAuth.js設定
+   NEXTAUTH_URL=https://your-domain.vercel.app
+   NEXTAUTH_URL_INTERNAL=https://your-domain.vercel.app
+   NEXTAUTH_SECRET=production-secret-key-32-characters
+   
+   # Google OAuth設定
+   GOOGLE_CLIENT_ID=production-google-client-id
+   GOOGLE_CLIENT_SECRET=production-google-client-secret
+   
+   # Database設定
+   DATABASE_URL=libsql://your-database-name.turso.io
+   TURSO_AUTH_TOKEN=your-turso-auth-token
+   ```
+
+3. **環境別設定**
+   - Production, Preview, Development環境ごとに設定可能
+   - 本番では必ずHTTPS URLを使用
+
+### セキュリティベストプラクティス
+- ⚠️ **絶対に秘密情報を `.env` ファイルでリポジトリにコミットしない**
+- ✅ プロダクション環境ではプラットフォームの環境変数機能を使用
+- ✅ `NEXTAUTH_SECRET`は必ず32文字以上のランダムな文字列
+- ✅ OAuthアプリケーションの設定で本番ドメインのみを許可
 
 ## トラブルシューティング
 
