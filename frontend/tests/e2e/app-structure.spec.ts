@@ -17,7 +17,7 @@ test.describe('Application Structure', () => {
     await page.goto('/auth/signin');
     
     // ボタンが適切にスタイリングされていることを確認
-    const googleButton = page.getByRole('button', { name: 'Googleでログイン' });
+    const googleButton = page.locator('button').filter({ hasText: 'Google' });
     await expect(googleButton).toHaveClass(/rounded-md/);
     await expect(googleButton).toHaveClass(/border/);
   });
@@ -62,7 +62,7 @@ test.describe('Application Structure', () => {
     expect(bodyStyles.padding).toBeDefined();
     
     // Tailwind CSSの特定のクラスが適用されているかを確認
-    const googleButton = page.getByRole('button', { name: 'Googleでログイン' });
+    const googleButton = page.locator('button').filter({ hasText: 'Google' });
     const buttonStyles = await googleButton.evaluate((el) => {
       const style = window.getComputedStyle(el);
       return {

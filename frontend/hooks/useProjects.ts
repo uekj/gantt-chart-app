@@ -179,5 +179,7 @@ export const useProjects = () => {
     createTask,
     updateTask,
     deleteTask,
+    setProjects,
+    setTasks,
   };
 };

@@ -7,6 +7,9 @@ import { Task, Project } from '../../shared/types';
 import GanttChart from '../components/GanttChart';
 import ProjectModal from '../components/ProjectModal';
 import TaskModal from '../components/TaskModal';
+import { DragDropProvider } from '../components/DragDropProvider';
+import { SortableProjectList } from '../components/SortableProjectList';
+import { SortableTaskList } from '../components/SortableTaskList';
 import { useProjects } from '../hooks/useProjects';
 
 export default function Home() {
@@ -23,6 +26,8 @@ export default function Home() {
     createTask,
     updateTask,
     deleteTask,
+    setProjects,
+    setTasks,
   } = useProjects();
   
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
@@ -98,6 +103,15 @@ export default function Home() {
     await deleteTask(taskId);
   };
 
+  // 順序変更ハンドラー
+  const handleProjectOrderChange = (reorderedProjects: Project[]) => {
+    setProjects(reorderedProjects);
+  };
+
+  const handleTaskOrderChange = (reorderedTasks: Task[]) => {
+    setTasks(reorderedTasks);
+  };
+
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/auth/signin' });
   };
@@ -126,7 +140,8 @@ export default function Home() {
   }
 
   return (
-    <main className="h-screen flex flex-col">
+    <DragDropProvider>
+      <main className="h-screen flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 p-4">
         {error && (
@@ -195,85 +210,26 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Project & Task List */}
         <div className="w-80 bg-gray-50 border-r border-gray-200 overflow-y-auto">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">プロジェクト</h2>
-              <button 
-                onClick={handleCreateProject}
-                className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-              >
-                + 新規
-              </button>
+          <SortableProjectList
+            projects={projects}
+            selectedProject={selectedProject}
+            onProjectSelect={setSelectedProject}
+            onEditProject={handleEditProject}
+            onCreateProject={handleCreateProject}
+            onProjectOrderChange={handleProjectOrderChange}
+          />
+          
+          {selectedProject && (
+            <div className="border-t border-gray-300">
+              <SortableTaskList
+                tasks={getTasksForProject(selectedProject)}
+                projectId={selectedProject}
+                onCreateTask={() => handleCreateTask(selectedProject)}
+                onEditTask={handleEditTask}
+                onTaskOrderChange={handleTaskOrderChange}
+              />
             </div>
-            
-            {projects.map(project => (
-              <div key={project.id} className="mb-4 border border-gray-200 rounded-lg bg-white">
-                <div 
-                  className={`p-3 cursor-pointer hover:bg-gray-50 ${
-                    selectedProject === project.id ? 'bg-blue-50 border-blue-200' : ''
-                  }`}
-                  onClick={() => setSelectedProject(selectedProject === project.id ? null : project.id)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-800">{project.name}</h3>
-                      <span className="text-xs text-gray-500">{project.start_date}</span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditProject(project);
-                      }}
-                      className="ml-2 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
-                    >
-                      編集
-                    </button>
-                  </div>
-                </div>
-                
-                {selectedProject === project.id && (
-                  <div className="border-t border-gray-200">
-                    <div className="p-2 bg-gray-50 flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-700">タスク</span>
-                      <button 
-                        onClick={() => handleCreateTask(project.id)}
-                        className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                      >
-                        + 追加
-                      </button>
-                    </div>
-                    <div className="max-h-60 overflow-y-auto">
-                      {getTasksForProject(project.id).map(task => (
-                        <div 
-                          key={task.id} 
-                          className="p-2 border-t border-gray-100 hover:bg-gray-50 cursor-pointer"
-                          onClick={() => handleEditTask(task)}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-800">{task.name}</div>
-                              <div className="text-xs text-gray-500">
-                                {task.start_date} 〜 {task.end_date}
-                              </div>
-                            </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditTask(task);
-                              }}
-                              className="ml-2 px-1 py-1 text-xs text-gray-400 hover:text-gray-600"
-                            >
-                              ✏️
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          )}
         </div>
 
         {/* Right Side - Gantt Chart Area */}
@@ -314,6 +270,7 @@ export default function Home() {
         mode={editingTask ? 'edit' : 'create'}
         defaultProjectId={taskModalProjectId}
       />
-    </main>
+      </main>
+    </DragDropProvider>
   );
 }

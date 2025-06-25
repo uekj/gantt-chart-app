@@ -233,7 +233,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ projects, tasks, viewMode, onTa
   }, [dragState.isDragging, handleMouseMove, handleMouseUp]);
 
   return (
-    <div className="gantt-chart overflow-auto">
+    <div className="gantt-chart overflow-auto" data-testid="gantt-chart">
       {/* ヘッダー（日付） */}
       <div className="gantt-header bg-gray-100 border-b border-gray-300 sticky top-0 z-10">
         <div className="flex min-w-max">

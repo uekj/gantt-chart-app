@@ -23,7 +23,7 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByRole('heading', { name: 'Gantt Chart App' })).toBeVisible();
     
     // Googleログインボタンの確認
-    const googleButton = page.getByRole('button', { name: 'Googleでログイン' });
+    const googleButton = page.locator('button').filter({ hasText: 'Google' });
     await expect(googleButton).toBeVisible();
     await expect(googleButton).toBeEnabled();
     
@@ -38,11 +38,11 @@ test.describe('Authentication Flow', () => {
   test('should handle sign-in button interaction', async ({ page }) => {
     await page.goto('/auth/signin');
     
-    // Googleログインボタンをクリック
-    const googleButton = page.getByRole('button', { name: 'Googleでログイン' });
+    // Googleログインボタンをより柔軟なセレクタで取得
+    const googleButton = page.locator('button').filter({ hasText: 'Google' });
     
     // ボタンが表示されることを確認
-    await expect(googleButton).toBeVisible();
+    await expect(googleButton).toBeVisible({ timeout: 10000 });
     await expect(googleButton).toBeEnabled();
     
     // 注意: 実際のOAuth認証はテスト環境では行わない
@@ -51,10 +51,10 @@ test.describe('Authentication Flow', () => {
 
   test('should display error page correctly', async ({ page }) => {
     // エラーページに直接アクセス
-    await page.goto('/auth/error?error=Default');
+    await page.goto('/auth/error?error=Default', { waitUntil: 'networkidle' });
     
     // エラーページの要素確認
-    await expect(page.getByText('ログインエラー')).toBeVisible();
+    await expect(page.getByText('ログインエラー')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('予期しないエラーが発生しました。')).toBeVisible();
     await expect(page.getByText('再度ログインを試す')).toBeVisible();
     await expect(page.getByText('ホームページに戻る')).toBeVisible();

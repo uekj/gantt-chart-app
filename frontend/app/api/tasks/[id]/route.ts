@@ -6,9 +6,9 @@ import { eq, and } from 'drizzle-orm'
 import { initializeLocalDatabase } from '@/lib/db/init'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 /**
@@ -26,7 +26,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // ローカルデータベース初期化
     await initializeLocalDatabase()
 
-    const taskId = parseInt(params.id)
+    const resolvedParams = await params
+    const taskId = parseInt(resolvedParams.id)
     if (isNaN(taskId)) {
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 })
     }
@@ -81,7 +82,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // ローカルデータベース初期化
     await initializeLocalDatabase()
 
-    const taskId = parseInt(params.id)
+    const resolvedParams = await params
+    const taskId = parseInt(resolvedParams.id)
     if (isNaN(taskId)) {
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 })
     }
@@ -172,7 +174,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // ローカルデータベース初期化
     await initializeLocalDatabase()
 
-    const taskId = parseInt(params.id)
+    const resolvedParams = await params
+    const taskId = parseInt(resolvedParams.id)
     if (isNaN(taskId)) {
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 })
     }

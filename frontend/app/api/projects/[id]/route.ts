@@ -5,9 +5,9 @@ import { auth } from '@/lib/auth'
 import { eq, and } from 'drizzle-orm'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 /**
@@ -22,7 +22,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const projectId = parseInt(params.id)
+    const resolvedParams = await params
+    const projectId = parseInt(resolvedParams.id)
     if (isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
     }
@@ -58,7 +59,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const projectId = parseInt(params.id)
+    const resolvedParams = await params
+    const projectId = parseInt(resolvedParams.id)
     if (isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
     }
@@ -112,7 +114,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const projectId = parseInt(params.id)
+    const resolvedParams = await params
+    const projectId = parseInt(resolvedParams.id)
     if (isNaN(projectId)) {
       return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
     }
